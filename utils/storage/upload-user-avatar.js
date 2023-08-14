@@ -2,20 +2,17 @@ const fs = require("fs");
 const path = require("path");
 
 const asyncHandler = require("express-async-handler");
-const aws = require("aws-sdk");
 const multer = require("multer");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 
-// Initialize AWS S3
-const s3 = new aws.S3({
-  apiVersion: process.env.AWS_API_VERSION,
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_KEY,
-});
+const { uploadToAWSS3 } = require("./s3");
 
 // Multer storage configuration
 const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/avatars");
+  },
   filename: function (req, file, cb) {
     cb(null, uuidv4() + path.extname(file.originalname));
   },
@@ -32,13 +29,13 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Initialize multer with storage and file filter
-exports.upload = multer({
+exports.uploadUserAvatar = multer({
   storage: fileStorage,
   fileFilter: fileFilter,
 });
 
-// Middleware to create and process post media
-exports.createPostMedia = asyncHandler(async (req, res, next) => {
+// Middleware to create and process user avatar
+exports.createUserAvatar = asyncHandler(async (req, res, next) => {
   // Check for file validation error
   if (req.fileValidationError) {
     const error = new Error("Valid file extensions: [.png, .jpg]");
@@ -52,12 +49,12 @@ exports.createPostMedia = asyncHandler(async (req, res, next) => {
 
     // Prepare upload parameters for AWS S3
     let upload = {
-      Key: `posts/${uuidv4()}${path.extname(req.file.originalname)}`,
+      Key: `avatars/${uuidv4()}${path.extname(req.file.originalname)}`,
       Bucket: process.env.AWS_BUCKET,
       ACL: "public-read",
       ContentType: req.file.mimetype,
       Body: await sharp(filePath)
-        .resize(4096, 4096, {
+        .resize(200, 200, {
           fit: sharp.fit.inside,
           withoutEnlargement: true,
         })
@@ -71,22 +68,3 @@ exports.createPostMedia = asyncHandler(async (req, res, next) => {
     next();
   }
 });
-
-// Function to upload to AWS S3
-const uploadToAWSS3 = (upload, req, res, next) => {
-  // S3 ManagedUpload with callbacks are not supported in AWS SDK for JavaScript (v3).
-  // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
-  // S3 ManagedUpload with callbacks are not supported in AWS SDK for JavaScript (v3).
-  // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
-  s3.upload(upload, (err, uploadRes) => {
-    if (err) {
-      return res.status(422).json({
-        message: "There was an error uploading file to S3 bucket",
-        error: err,
-      });
-    } else {
-      req.body.mediaUrl = uploadRes.Location;
-      next();
-    }
-  });
-};

@@ -6,7 +6,14 @@ const compression = require("compression");
 const helmet = require("helmet");
 
 const postRoutes = require("./routes/post");
-const { upload, createPostMedia } = require("./utils/storage");
+const userRoutes = require("./routes/user");
+
+const { createPostMedia, uploadPost } = require("./utils/storage/upload-post");
+const {
+  createUserAvatar,
+  uploadUserAvatar,
+} = require("./utils/storage/upload-user-avatar");
+
 const { errorHandler } = require("./middleware/error");
 const errorController = require("./controllers/error");
 
@@ -33,10 +40,15 @@ app.use(
 );
 
 app.use(bodyParser.json());
-app.use(upload.single("upload"), createPostMedia);
 app.use("uploads", express.static(path.join(__dirname, "uploads")));
 
-app.use("/api/post", postRoutes);
+app.use("/api/post", uploadPost.single("media"), createPostMedia, postRoutes);
+app.use(
+  "/api/user",
+  uploadUserAvatar.single("media"),
+  createUserAvatar,
+  userRoutes
+);
 
 app.use(errorController.get404);
 app.use(errorHandler);
