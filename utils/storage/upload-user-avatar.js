@@ -10,9 +10,6 @@ const { uploadToAWSS3 } = require("./s3");
 
 // Multer storage configuration
 const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/avatars");
-  },
   filename: function (req, file, cb) {
     cb(null, uuidv4() + path.extname(file.originalname));
   },
