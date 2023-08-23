@@ -32,12 +32,14 @@ app.use(limiter);
 
 const port = process.env.PORT || 8080;
 
-app.use(
-  cors({
-    credentials: true,
-    origin: process.env.CLIENT_ORIGIN,
-  })
-);
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: process.env.CLIENT_ORIGIN,
+//   })
+// );
+
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use("uploads", express.static(path.join(__dirname, "uploads")));
