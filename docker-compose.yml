@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  music_social_upload_app:
+    container_name: music-social-upload
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "5050:5050"
+    environment:
+      - NODE_ENV=production
+      - PORT=5050
+      - AWS_API_VERSION=2012-10-17
+      - AWS_ACCESS_KEY=
+      - AWS_SECRET_KEY=
+      - AWS_BUCKET=social-media-music
+    command: ["npm", "start"]
