@@ -12,7 +12,7 @@ services:
       - NODE_ENV=production
       - PORT=5050
       - AWS_API_VERSION=2012-10-17
-      - AWS_ACCESS_KEY=
-      - AWS_SECRET_KEY=
+      - AWS_ACCESS_KEY=AKIA2HRA2XHOBJWTNNNC
+      - AWS_SECRET_KEY=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
       - AWS_BUCKET=social-media-music
     command: ["npm", "start"]
